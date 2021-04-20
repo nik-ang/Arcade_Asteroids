@@ -1,0 +1,83 @@
+[gd_scene load_steps=11 format=2]
+
+[ext_resource path="res://Assets/assets/images/backgrounds/blue.png" type="Texture" id=1]
+[ext_resource path="res://Characters/Player.tscn" type="PackedScene" id=2]
+[ext_resource path="res://Objects/AsteroidSpawner.tscn" type="PackedScene" id=4]
+[ext_resource path="res://Entities/MainCamera.tscn" type="PackedScene" id=5]
+[ext_resource path="res://Entities/MainCamera.gd" type="Script" id=6]
+[ext_resource path="res://Objects/StarSpawner.tscn" type="PackedScene" id=7]
+[ext_resource path="res://UI/GUI.tscn" type="PackedScene" id=8]
+[ext_resource path="res://Game.gd" type="Script" id=9]
+
+[sub_resource type="Shader" id=1]
+code = "shader_type canvas_item;
+
+uniform vec2 direction = vec2(0.0, -1.0);
+uniform float speed_scale = 0.5;
+
+void fragment()
+{
+	vec2 move = direction * TIME * speed_scale;
+	
+	COLOR = texture(TEXTURE, UV + move);
+}"
+
+[sub_resource type="ShaderMaterial" id=2]
+shader = SubResource( 1 )
+shader_param/direction = Vector2( 0, -1 )
+shader_param/speed_scale = 0.5
+
+[node name="Game" type="Node2D"]
+script = ExtResource( 9 )
+
+[node name="Background" type="Sprite" parent="."]
+material = SubResource( 2 )
+position = Vector2( -7.98257, -5.59546 )
+texture = ExtResource( 1 )
+centered = false
+region_enabled = true
+region_rect = Rect2( 0, 0, 1940, 1090 )
+
+[node name="Player" parent="." instance=ExtResource( 2 )]
+position = Vector2( 1035.55, 919.273 )
+
+[node name="AsteroidSpawner" parent="." instance=ExtResource( 4 )]
+
+[node name="StarSpawner" parent="." instance=ExtResource( 7 )]
+
+[node name="MainCamera" parent="." instance=ExtResource( 5 )]
+anchor_mode = 0
+current = true
+script = ExtResource( 6 )
+
+[node name="GUI" parent="." instance=ExtResource( 8 )]
+
+[node name="GameOverLabel" type="Label" parent="."]
+visible = false
+margin_left = 1.0
+margin_top = 1.0
+margin_right = 1919.0
+margin_bottom = 1082.0
+text = "GAME OVER"
+align = 1
+valign = 1
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="RestartLabel" type="Label" parent="GameOverLabel"]
+margin_left = 894.343
+margin_top = 567.307
+margin_right = 1033.34
+margin_bottom = 581.307
+text = "Press Space to restart"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="GameOverTimer" type="Timer" parent="."]
+wait_time = 3.0
+one_shot = true
+[connection signal="laser_shoot" from="Player" to="MainCamera" method="_on_Player_laser_shoot"]
+[connection signal="player_died" from="Player" to="." method="_on_Player_player_died"]
+[connection signal="timeout" from="GameOverTimer" to="." method="_on_GameOverTimer_timeout"]
